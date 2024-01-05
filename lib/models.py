@@ -1,59 +1,55 @@
-from sqlalchemy import create_engine
-from sqlalchemy import (Column,Integer,String,ForeignKey)
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-
+engine = create_engine('sqlite:///freebies.db')
 Base = declarative_base()
-engine  =  create_engine('sqlite:///freebies.db')
 
-class Company:
+class Company(Base):
     __tablename__ = 'companies'
 
     id = Column(Integer(), primary_key=True)
     name = Column(String())
-    founding_year =Column(Integer())
+    founding_year = Column(Integer())
 
-# represent data
+    # establish relationship to freebie
+    freebie = relationship('Freebie', backref='company')
+
+    # represent data
     def __repr__(self):
-        return  f"company: {self.id}"\
-        f"name: {self.name}"\
-        f"founding year : {self.founding_year}"
-    
+        return f"company: {self.id}, " \
+               f"name: {self.name}, " \
+               f"founding year: {self.founding_year}"
 
-# establish relationship to freeble
-    freebie = relationship('Freebie', backref= 'company')
-
-class Dev:
+class Dev(Base):
     __tablename__ = 'devs'
 
     id = Column(Integer(), primary_key=True)
     name = Column(String())
 
-# represent data
+    # establish relationship to freebie
+    freebie = relationship('Freebie', backref='dev')
+
+    # represent data
     def __repr__(self):
-        return f"dev {self.id}:"\
-        f"name:{self.name}"\
-        
+        return f"dev {self.id}: " \
+               f"name: {self.name}"
 
-
-# establish relationship to freeble
-    dev =  relationship('Freebie', backref = 'dev')
-
-class Freebie:
+class Freebie(Base):
     __tablename__ = 'freebies'
 
     id = Column(Integer(), primary_key=True)
     item_name = Column(String())
     value = Column(Integer())
 
-# represent data
+    # establish connection to both company and dev
+    company_id = Column(Integer(), ForeignKey('companies.id'))
+    dev_id = Column(Integer(), ForeignKey('devs.id'))
+
+    # represent data
     def __repr__(self):
-        return f"freebie {self.id}:"\
-        f"item name:{self.item_name}"\
-        f"value:{self.value}"
+        return f"freebie {self.id}: " \
+               f"item name: {self.item_name}, " \
+               f"value: {self.value}"
 
-
-# establish connection to both company and dev
-    company_id = Column(Integer(), ForeignKey('company_id'))
-    dev_id = Column(Integer(), ForeignKey('dev_id'))
+Base.metadata.create_all(engine)
